@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Sistem Bahan Ajar UT</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="dashboard.html" class="brand" style="display: flex; align-items: center;">
+            <img src="assets/images/logo.png" alt="UT Logo" style="height: 30px; margin-right: 10px;">
+            Sistem Bahan Ajar UT
+        </a>
+        <ul class="nav-links">
+            <li><a href="stok.html">Informasi Bahan Ajar</a></li>
+            <li><a href="tracking.html">Tracking Pengiriman</a></li>
+            <li class="dropdown">
+                <a href="#">Laporan &#9662;</a>
+                <div class="dropdown-content">
+                    <a href="#">Monitoring progress DO</a>
+                    <a href="#">Rekap bahan ajar</a>
+                </div>
+            </li>
+            <li><a href="#">Histori Transaksi</a></li>
+            <li><a href="index.html" onclick="localStorage.removeItem('loggedInUser')">Logout</a></li>
+        </ul>
+    </nav>
+
+    <div class="container mt-3">
+        <div class="card text-center">
+            <h1 id="greetingMessage">Selamat Datang</h1>
+            <p class="mt-1" id="userNameDisplay">Anda login sebagai Mahasiswa</p>
+        </div>
+
+        <div class="card mt-2">
+            <h2>Pengumuman</h2>
+            <p class="mt-1">Selamat datang di sistem informasi pengiriman bahan ajar Universitas Terbuka. Gunakan menu di atas untuk navigasi ke halaman yang Anda butuhkan.</p>
+        </div>
+    </div>
+
+    <script src="js/data.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>
