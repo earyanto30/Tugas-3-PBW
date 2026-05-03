@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tracking Pengiriman - Sistem Bahan Ajar UT</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="dashboard.html" class="brand" style="display: flex; align-items: center;">
+            <img src="assets/images/logo.png" alt="UT Logo" style="height: 30px; margin-right: 10px;">
+            Sistem Bahan Ajar UT
+        </a>
+        <ul class="nav-links">
+            <li><a href="stok.html">Informasi Bahan Ajar</a></li>
+            <li><a href="tracking.html">Tracking Pengiriman</a></li>
+            <li class="dropdown">
+                <a href="#">Laporan &#9662;</a>
+                <div class="dropdown-content">
+                    <a href="#">Monitoring progress DO</a>
+                    <a href="#">Rekap bahan ajar</a>
+                </div>
+            </li>
+            <li><a href="#">Histori Transaksi</a></li>
+            <li><a href="index.html" onclick="localStorage.removeItem('loggedInUser')">Logout</a></li>
+        </ul>
+    </nav>
+
+    <div class="container mt-3">
+        <div class="card text-center">
+            <h2>Lacak Pengiriman Bahan Ajar</h2>
+            <p class="mt-1">Masukkan Nomor Delivery Order (DO) Anda untuk melihat status pengiriman.</p>
+            <div class="form-group mt-2" style="max-width: 400px; margin: 20px auto; text-align: center;">
+                <input type="text" id="noDOInput" placeholder="Contoh: 2023001234">
+                <button id="btnCari" class="btn btn-primary mt-1" style="width: 100%;">Cari</button>
+            </div>
+            <p id="errorMsg" style="color: red; display: none;">Nomor DO tidak ditemukan.</p>
+        </div>
+
+        <div id="trackingResult" style="display: none;">
+            <div class="card mt-2">
+                <h3>Informasi Paket</h3>
+                <table style="margin-top: 10px;">
+                    <tr>
+                        <th style="width: 30%">Nama Mahasiswa</th>
+                        <td id="resNama"></td>
+                    </tr>
+                    <tr>
+                        <th>Status Pengiriman</th>
+                        <td id="resStatus" style="font-weight: bold; color: var(--ut-blue);"></td>
+                    </tr>
+                    <tr>
+                        <th>Detail Ekspedisi</th>
+                        <td id="resEkspedisi"></td>
+                    </tr>
+                    <tr>
+                        <th>Tanggal Kirim</th>
+                        <td id="resTanggal"></td>
+                    </tr>
+                    <tr>
+                        <th>Jenis Paket</th>
+                        <td id="resPaket"></td>
+                    </tr>
+                    <tr>
+                        <th>Total Pembayaran</th>
+                        <td id="resTotal"></td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="card mt-2">
+                <h3>Riwayat Perjalanan (Tracking)</h3>
+                <ul class="timeline" id="resPerjalanan">
+                    <!-- Dinamis via JS -->
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/data.js"></script>
+    <script src="js/tracking.js"></script>
+</body>
+</html>
