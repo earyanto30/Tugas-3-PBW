@@ -7,80 +7,163 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+    <div id="stokApp">
     <nav class="navbar">
-        <a href="dashboard.html" class="brand" style="display: flex; align-items: center;">
+        <a href="index.html" class="brand" style="display: flex; align-items: center;">
             <img src="assets/images/logo.png" alt="UT Logo" style="height: 30px; margin-right: 10px;">
             Sistem Bahan Ajar UT
         </a>
         <ul class="nav-links">
             <li><a href="stok.html">Informasi Bahan Ajar</a></li>
             <li><a href="tracking.html">Tracking Pengiriman</a></li>
-            <li class="dropdown">
-                <a href="#">Laporan &#9662;</a>
-                <div class="dropdown-content">
-                    <a href="#">Monitoring progress DO</a>
-                    <a href="#">Rekap bahan ajar</a>
-                </div>
-            </li>
-            <li><a href="#">Histori Transaksi</a></li>
-            <li><a href="index.html" onclick="localStorage.removeItem('loggedInUser')">Logout</a></li>
+            <li><a href="index.html">Beranda</a></li>
         </ul>
     </nav>
 
     <div class="container mt-3">
         <div class="card">
             <h2>Daftar Stok Bahan Ajar</h2>
+            <div class="mt-1">
+                <strong>Total Data:</strong> <span v-text="filteredStok.length"></span>
+            </div>
+
+            <div class="mt-2">
+                <h3>Filter dan Urutkan</h3>
+                <div class="form-group">
+                    <label>UT Daerah (UPBJJ)</label>
+                    <select v-model="filters.upbjj" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                        <option value="">Semua UPBJJ</option>
+                        <option v-for="item in upbjjList" :key="item" :value="item" v-text="item"></option>
+                    </select>
+                </div>
+
+                <div class="form-group" v-show="filters.upbjj">
+                    <label>Kategori Mata Kuliah</label>
+                    <select v-model="filters.kategori" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                        <option value="">Semua Kategori</option>
+                        <option v-for="item in kategoriOptions" :key="item" :value="item" v-text="item"></option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Status Reorder</label>
+                    <select v-model="filters.reorder" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                        <option value="">Semua</option>
+                        <option value="lt-safety">Qty &lt; Safety</option>
+                        <option value="empty">Qty = 0</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Urutkan Berdasarkan</label>
+                    <select v-model="sortBy" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                        <option value="judul">Judul</option>
+                        <option value="qty">Stok</option>
+                        <option value="harga">Harga</option>
+                    </select>
+                </div>
+
+                <button class="btn" @click="resetFilters">Reset Filter</button>
+            </div>
+
             <table id="tabelStok">
                 <thead>
                     <tr>
-                        <th>Cover</th>
-                        <th>Kode Lokasi</th>
-                        <th>Kode Barang</th>
-                        <th>Nama Barang</th>
-                        <th>Jenis</th>
-                        <th>Edisi</th>
-                        <th>Stok</th>
+                        <th>Kode</th>
+                        <th>Judul</th>
+                        <th>Kategori</th>
+                        <th>UPBJJ</th>
+                        <th>Lokasi Rak</th>
+                        <th>Harga</th>
+                        <th>Qty</th>
+                        <th>Safety</th>
+                        <th>Status</th>
+                        <th>Catatan</th>
+                        <th>Aksi</th>
                     </tr>
                 </thead>
-                <tbody id="stokBody">
-                    <!-- Dinamis via JS -->
+                <tbody>
+                    <tr v-if="filteredStok.length === 0">
+                        <td colspan="11">Data tidak ditemukan.</td>
+                    </tr>
+                    <tr v-for="item in filteredStok" :key="item.id">
+                        <td v-text="item.kode"></td>
+                        <td v-text="item.judul"></td>
+                        <td v-text="item.kategori"></td>
+                        <td v-text="item.upbjj"></td>
+                        <td v-text="item.lokasiRak"></td>
+                        <td v-text="formatRupiah(item.harga)"></td>
+                        <td v-text="item.qty"></td>
+                        <td v-text="item.safety"></td>
+                        <td>
+                            <span v-if="statusStok(item) === 'kosong'">Kosong</span>
+                            <span v-else-if="statusStok(item) === 'menipis'">Menipis</span>
+                            <span v-else>Aman</span>
+                        </td>
+                        <td v-html="item.catatanHTML"></td>
+                        <td><button class="btn btn-primary" @click="startEdit(item)">Edit</button></td>
+                    </tr>
                 </tbody>
             </table>
         </div>
 
         <div class="card mt-2">
-            <h3>Tambah Stok Baru</h3>
-            <form id="formTambahStok" class="mt-1">
+            <h3 v-text="editingId ? 'Edit Stok' : 'Tambah Stok Baru'"></h3>
+            <form class="mt-1" @submit.prevent="submitForm">
                 <div class="form-group">
-                    <label>Kode Lokasi</label>
-                    <input type="text" id="inputLokasi" required placeholder="Contoh: 0JKT02">
+                    <label>Kode Mata Kuliah</label>
+                    <input type="text" v-model.trim="form.kode" required placeholder="Contoh: EKMA4116">
                 </div>
                 <div class="form-group">
-                    <label>Kode Barang</label>
-                    <input type="text" id="inputKode" required placeholder="Contoh: EKMA4216">
+                    <label>Judul Mata Kuliah</label>
+                    <input type="text" v-model.trim="form.judul" required placeholder="Contoh: Pengantar Manajemen">
                 </div>
                 <div class="form-group">
-                    <label>Nama Barang</label>
-                    <input type="text" id="inputNama" required placeholder="Nama Bahan Ajar">
+                    <label>Kategori</label>
+                    <select v-model="form.kategori" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                        <option value="">Pilih Kategori</option>
+                        <option v-for="item in kategoriList" :key="item" :value="item" v-text="item"></option>
+                    </select>
                 </div>
                 <div class="form-group">
-                    <label>Jenis Barang</label>
-                    <input type="text" id="inputJenis" required placeholder="Contoh: BMP">
+                    <label>UPBJJ</label>
+                    <select v-model="form.upbjj" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                        <option value="">Pilih UPBJJ</option>
+                        <option v-for="item in upbjjList" :key="item" :value="item" v-text="item"></option>
+                    </select>
                 </div>
                 <div class="form-group">
-                    <label>Edisi</label>
-                    <input type="number" id="inputEdisi" required min="1" placeholder="1">
+                    <label>Lokasi Rak</label>
+                    <input type="text" v-model.trim="form.lokasiRak" required placeholder="Contoh: R1-A1">
                 </div>
                 <div class="form-group">
-                    <label>Stok</label>
-                    <input type="number" id="inputStok" required min="0" placeholder="100">
+                    <label>Harga</label>
+                    <input type="number" v-model.number="form.harga" required min="0" placeholder="65000">
                 </div>
-                <button type="submit" class="btn btn-primary">Tambah ke Tabel</button>
+                <div class="form-group">
+                    <label>Jumlah Stok</label>
+                    <input type="number" v-model.number="form.qty" required min="0" placeholder="100">
+                </div>
+                <div class="form-group">
+                    <label>Stok Safety</label>
+                    <input type="number" v-model.number="form.safety" required min="0" placeholder="20">
+                </div>
+                <div class="form-group">
+                    <label>Catatan (HTML sederhana)</label>
+                    <input type="text" v-model="form.catatanHTML" placeholder="Contoh: <em>Prioritas kirim</em>">
+                </div>
+
+                <p v-if="errorMessage" style="color: red;" v-text="errorMessage"></p>
+                <p v-else style="color: var(--ut-blue);">Status otomatis: <strong v-text="statusStok(form)"></strong></p>
+
+                <button type="submit" class="btn btn-primary" v-text="editingId ? 'Simpan Perubahan' : 'Tambah ke Tabel'"></button>
+                <button type="button" class="btn mt-1" v-if="editingId" @click="cancelEdit">Batal Edit</button>
             </form>
         </div>
     </div>
+    </div>
 
-    <script src="js/data.js"></script>
-    <script src="js/stok.js"></script>
+    <script src="node_modules/vue/dist/vue.global.prod.js"></script>
+    <script src="js/stok-app.js"></script>
 </body>
 </html>
