@@ -32,9 +32,12 @@ function initTrackingApp(seedData) {
       };
     },
     computed: {
+      // produce data bmp berdasarkan paket yg di select
       selectedPaket() {
         return this.paketList.find((item) => item.kode === this.newDO.paketKode) || null;
       },
+
+      // generate next nomor do
       doSequence() {
         const year = new Date().getFullYear();
         const prefix = "DO" + year + "-";
@@ -45,17 +48,23 @@ function initTrackingApp(seedData) {
         return nomorList.length ? Math.max(...nomorList) + 1 : 1;
       }
     },
+
     watch: {
+      // watch paketKode lalu calculate total
       "newDO.paketKode"() {
         this.newDO.total = this.selectedPaket ? Number(this.selectedPaket.harga) : 0;
       },
+
+      // clear error saat input nomor do
       searchDO(value) {
         if (!value) {
           this.searchError = "";
         }
       }
     },
+
     methods: {
+      // generate otomatis nomor do
       generateDONumber() {
         const year = new Date().getFullYear();
         const seq = String(this.doSequence).padStart(3, "0");
@@ -64,6 +73,8 @@ function initTrackingApp(seedData) {
       formatRupiah(nilai) {
         return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(Number(nilai) || 0);
       },
+
+      // action cari do di tombol search
       cariDO() {
         const key = this.searchDO.trim();
         if (!key) {
@@ -79,6 +90,8 @@ function initTrackingApp(seedData) {
         this.searchError = "";
         this.selectedTracking = this.tracking[key];
       },
+
+      // validate inputan do
       validateDO() {
         if (!this.newDO.nim || !this.newDO.nama || !this.newDO.ekspedisi || !this.newDO.paketKode) {
           this.formError = "Semua field wajib diisi kecuali nomor DO otomatis.";
@@ -87,6 +100,8 @@ function initTrackingApp(seedData) {
         this.formError = "";
         return true;
       },
+
+      // reset all form do
       resetForm() {
         this.newDO = {
           nomorDO: this.generateDONumber(),
@@ -98,7 +113,10 @@ function initTrackingApp(seedData) {
           total: 0
         };
       },
+
+      // submit data do dari inputan
       submitDO() {
+        // sblm submit validate dulu
         if (!this.validateDO()) return;
 
         const nomor = this.newDO.nomorDO;
@@ -123,6 +141,7 @@ function initTrackingApp(seedData) {
         this.resetForm();
       }
     },
+    // refresh agar muncul data baru
     mounted() {
       this.newDO.nomorDO = this.generateDONumber();
     }
