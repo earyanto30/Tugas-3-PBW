@@ -1,62 +1,12 @@
 <!DOCTYPE html>
 <html lang="id">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Sistem Bahan Ajar UT</title>
-    <link rel="stylesheet" href="css/style.css">
-</head>
-
-<body>
-    <div class="login-container">
-        <div class="login-card">
-            <img src="assets/images/logo.png" alt="UT Logo" style="max-width: 150px; margin-bottom: 15px;">
-            <h2>Sistem Bahan Ajar UT</h2>
-            <form id="loginForm">
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" required placeholder="Masukkan email anda">
-                </div>
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" required placeholder="Masukkan password anda">
-                </div>
-                <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
-            </form>
-
-            <div class="auth-links">
-                <a id="lupaPasswordBtn">Lupa password?</a> |
-                <a id="daftarBtn">Daftar akun baru</a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Lupa Password -->
-    <div id="modalLupaPassword" class="modal-overlay">
-        <div class="modal-content">
-            <span class="close-btn" id="closeLupaPassword">&times;</span>
-            <h3>Lupa Password?</h3>
-            <p class="mt-1">Silakan hubungi administrator UT atau masukkan email Anda untuk reset password.</p>
-            <div class="form-group mt-2">
-                <input type="email" placeholder="Email Anda">
-            </div>
-            <button class="btn" onclick="alert('Permintaan reset password telah dikirim.')">Kirim Permintaan</button>
-        </div>
-    </div>
-
-    <!-- Modal Daftar -->
-    <div id="modalDaftar" class="modal-overlay">
-        <div class="modal-content">
-            <span class="close-btn" id="closeDaftar">&times;</span>
-            <h3>Daftar Akun</h3>
-            <p class="mt-1">Pendaftaran mahasiswa baru dilakukan melalui admisi UT.</p>
-            <button class="btn mt-2" onclick="alert('Silakan kunjungi admisi-sia.ut.ac.id')">Info Pendaftaran</button>
-        </div>
-    </div>
-
-    <script src="js/data.js"></script>
-    <script src="js/login.js"></script>
-</body>
-
-</html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sistem Bahan Ajar UT</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+  </html>

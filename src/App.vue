@@ -11,6 +11,21 @@ const showForgotModal = ref(false);
 const showRegisterModal = ref(false);
 const requestEmail = ref('');
 const loggedInUser = ref(null);
+const activeTab = ref('stock');
+
+// Step 3 root-level app states (temporary local placeholders)
+const stockData = ref([
+  { kodeBarang: 'ASIP4301', namaBarang: 'Pengantar Ilmu Komunikasi', stok: 548 },
+  { kodeBarang: 'EKMA4216', namaBarang: 'Manajemen Keuangan', stok: 392 },
+]);
+const deliveryOrders = ref([
+  { nomorDO: 'DO2025-001', nama: 'Rina Wulandari', status: 'Dalam Perjalanan' },
+]);
+const packageData = ref([
+  { kodePaket: 'PKT-JKT-01', namaPaket: 'Paket Jakarta', totalItem: 2 },
+]);
+const isLoading = ref(false);
+const errorMessage = ref('');
 
 const currentHour = new Date().getHours();
 
@@ -51,8 +66,13 @@ function submitLogin() {
 function logout() {
   localStorage.removeItem('loggedInUser');
   loggedInUser.value = null;
+  activeTab.value = 'stock';
   form.email = '';
   form.password = '';
+}
+
+function setActiveTab(tab) {
+  activeTab.value = tab;
 }
 
 function closeForgotModal() {
@@ -152,12 +172,50 @@ function showRegistrationInfo() {
         </div>
 
         <div class="card mt-2">
-          <h2>Pengumuman</h2>
+          <h2>Dashboard</h2>
           <p class="mt-1">
-            Selamat datang di sistem informasi pengiriman bahan ajar Universitas
-            Terbuka. Gunakan menu di atas untuk navigasi ke halaman yang Anda
-            butuhkan.
+            Pilih menu utama untuk mengelola data stok bahan ajar atau tracking DO.
           </p>
+
+          <div class="nav-links" style="margin-top: 16px; gap: 10px">
+            <a
+              href="#"
+              :class="{ active: activeTab === 'stock' }"
+              @click.prevent="setActiveTab('stock')"
+            >
+              Stok Bahan Ajar
+            </a>
+            <a
+              href="#"
+              :class="{ active: activeTab === 'tracking' }"
+              @click.prevent="setActiveTab('tracking')"
+            >
+              Tracking DO
+            </a>
+          </div>
+
+          <div v-if="isLoading" class="mt-2">
+            <p>Memuat data...</p>
+          </div>
+          <div v-else-if="errorMessage" class="mt-2">
+            <p>{{ errorMessage }}</p>
+          </div>
+
+          <div v-else class="mt-2">
+            <section v-if="activeTab === 'stock'">
+              <h3>Stok Bahan Ajar</h3>
+              <p class="mt-1">Halaman stok akan ditampilkan di sini.</p>
+              <p class="mt-1">
+                Data sementara: {{ stockData.length }} item stok, {{ packageData.length }} paket.
+              </p>
+            </section>
+
+            <section v-else>
+              <h3>Tracking DO</h3>
+              <p class="mt-1">Halaman tracking delivery order akan ditampilkan di sini.</p>
+              <p class="mt-1">Data sementara: {{ deliveryOrders.length }} delivery order.</p>
+            </section>
+          </div>
         </div>
       </div>
     </div>
