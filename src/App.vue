@@ -1,6 +1,15 @@
 <script setup>
-import { computed, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import { dataPengguna } from '../data/data.js';
+import {
+  createDeliveryOrder,
+  createStock,
+  deleteDeliveryOrder,
+  deleteStock,
+  getRootData,
+  updateDeliveryOrder,
+  updateStock,
+} from './services/api.js';
 
 const form = reactive({
   email: '',
@@ -13,17 +22,15 @@ const requestEmail = ref('');
 const loggedInUser = ref(null);
 const activeTab = ref('stock');
 
-// Step 3 root-level app states (temporary local placeholders)
-const stockData = ref([
-  { kodeBarang: 'ASIP4301', namaBarang: 'Pengantar Ilmu Komunikasi', stok: 548 },
-  { kodeBarang: 'EKMA4216', namaBarang: 'Manajemen Keuangan', stok: 392 },
-]);
-const deliveryOrders = ref([
-  { nomorDO: 'DO2025-001', nama: 'Rina Wulandari', status: 'Dalam Perjalanan' },
-]);
-const packageData = ref([
-  { kodePaket: 'PKT-JKT-01', namaPaket: 'Paket Jakarta', totalItem: 2 },
-]);
+// Step 5 root-level app states (source of truth from api.js)
+const stockData = ref([]);
+const deliveryOrders = ref([]);
+const packageData = ref([]);
+const masterData = ref({
+  upbjjList: [],
+  kategoriList: [],
+  pengirimanList: [],
+});
 const isLoading = ref(false);
 const errorMessage = ref('');
 
@@ -48,6 +55,65 @@ const greetingMessage = computed(() => {
 
   return 'Selamat Sore!';
 });
+
+function applyRootData(rootData) {
+  stockData.value = rootData.stok ?? [];
+  deliveryOrders.value = Object.values(rootData.tracking ?? {});
+  packageData.value = rootData.paket ?? [];
+  masterData.value = {
+    upbjjList: rootData.upbjjList ?? [],
+    kategoriList: rootData.kategoriList ?? [],
+    pengirimanList: rootData.pengirimanList ?? [],
+  };
+}
+
+function loadRootData() {
+  isLoading.value = true;
+  errorMessage.value = '';
+
+  try {
+    const rootData = getRootData();
+    applyRootData(rootData);
+  } catch (error) {
+    errorMessage.value = error instanceof Error ? error.message : 'Gagal memuat data aplikasi.';
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+// Root mutation flow for Step 5: mutate via api.js then refresh root state.
+function refreshAfterMutation(mutationFn) {
+  try {
+    mutationFn();
+    loadRootData();
+  } catch (error) {
+    errorMessage.value = error instanceof Error ? error.message : 'Terjadi kesalahan saat memperbarui data.';
+  }
+}
+
+function handleCreateStock(payload) {
+  refreshAfterMutation(() => createStock(payload));
+}
+
+function handleUpdateStock(kode, payload) {
+  refreshAfterMutation(() => updateStock(kode, payload));
+}
+
+function handleDeleteStock(kode) {
+  refreshAfterMutation(() => deleteStock(kode));
+}
+
+function handleCreateDeliveryOrder(payload) {
+  refreshAfterMutation(() => createDeliveryOrder(payload));
+}
+
+function handleUpdateDeliveryOrder(nomorDO, payload) {
+  refreshAfterMutation(() => updateDeliveryOrder(nomorDO, payload));
+}
+
+function handleDeleteDeliveryOrder(nomorDO) {
+  refreshAfterMutation(() => deleteDeliveryOrder(nomorDO));
+}
 
 function submitLogin() {
   const user = dataPengguna.find(
@@ -93,6 +159,10 @@ function showRegistrationInfo() {
   window.alert('Silakan kunjungi admisi-sia.ut.ac.id');
   closeRegisterModal();
 }
+
+onMounted(() => {
+  loadRootData();
+});
 </script>
 
 <template>
@@ -206,14 +276,15 @@ function showRegistrationInfo() {
               <h3>Stok Bahan Ajar</h3>
               <p class="mt-1">Halaman stok akan ditampilkan di sini.</p>
               <p class="mt-1">
-                Data sementara: {{ stockData.length }} item stok, {{ packageData.length }} paket.
+                Data layanan: {{ stockData.length }} item stok, {{ packageData.length }} paket,
+                {{ masterData.upbjjList.length }} UPBJJ.
               </p>
             </section>
 
             <section v-else>
               <h3>Tracking DO</h3>
               <p class="mt-1">Halaman tracking delivery order akan ditampilkan di sini.</p>
-              <p class="mt-1">Data sementara: {{ deliveryOrders.length }} delivery order.</p>
+              <p class="mt-1">Data layanan: {{ deliveryOrders.length }} delivery order.</p>
             </section>
           </div>
         </div>
