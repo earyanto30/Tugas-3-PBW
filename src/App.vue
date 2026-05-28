@@ -1,5 +1,10 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue';
+import LoginPage from './components/auth/LoginPage.vue';
+import DashboardHome from './components/dashboard/DashboardHome.vue';
+import AppNavbar from './components/layout/AppNavbar.vue';
+import StockPage from './components/stock/StockPage.vue';
+import DoTracking from './components/tracking/DoTracking.vue';
 import { dataPengguna } from '../data/data.js';
 import {
   createDeliveryOrder,
@@ -11,48 +16,24 @@ import {
   updateStock,
 } from './services/api.js';
 
-const form = reactive({
-  email: '',
-  password: '',
-});
-
+const form = reactive({ email: '', password: '' });
 const showForgotModal = ref(false);
 const showRegisterModal = ref(false);
 const requestEmail = ref('');
 const loggedInUser = ref(null);
 const activeTab = ref('stock');
 
-// Step 5 root-level app states (source of truth from api.js)
 const stockData = ref([]);
 const deliveryOrders = ref([]);
 const packageData = ref([]);
-const masterData = ref({
-  upbjjList: [],
-  kategoriList: [],
-  pengirimanList: [],
-});
+const masterData = ref({ upbjjList: [], kategoriList: [], pengirimanList: [] });
 const isLoading = ref(false);
 const errorMessage = ref('');
 
 const currentHour = new Date().getHours();
-
-const welcomeMessage = computed(() => {
-  if (!loggedInUser.value) {
-    return '';
-  }
-
-  return `${loggedInUser.value.nama} berhasil login sebagai ${loggedInUser.value.role} (${loggedInUser.value.lokasi})`;
-});
-
 const greetingMessage = computed(() => {
-  if (currentHour >= 0 && currentHour < 11) {
-    return 'Selamat Pagi!';
-  }
-
-  if (currentHour >= 11 && currentHour < 15) {
-    return 'Selamat Siang!';
-  }
-
+  if (currentHour >= 0 && currentHour < 11) return 'Selamat Pagi!';
+  if (currentHour >= 11 && currentHour < 15) return 'Selamat Siang!';
   return 'Selamat Sore!';
 });
 
@@ -70,10 +51,8 @@ function applyRootData(rootData) {
 function loadRootData() {
   isLoading.value = true;
   errorMessage.value = '';
-
   try {
-    const rootData = getRootData();
-    applyRootData(rootData);
+    applyRootData(getRootData());
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : 'Gagal memuat data aplikasi.';
   } finally {
@@ -81,36 +60,31 @@ function loadRootData() {
   }
 }
 
-// Root mutation flow for Step 5: mutate via api.js then refresh root state.
 function refreshAfterMutation(mutationFn) {
   try {
     mutationFn();
     loadRootData();
   } catch (error) {
-    errorMessage.value = error instanceof Error ? error.message : 'Terjadi kesalahan saat memperbarui data.';
+    errorMessage.value =
+      error instanceof Error ? error.message : 'Terjadi kesalahan saat memperbarui data.';
   }
 }
 
 function handleCreateStock(payload) {
   refreshAfterMutation(() => createStock(payload));
 }
-
 function handleUpdateStock(kode, payload) {
   refreshAfterMutation(() => updateStock(kode, payload));
 }
-
 function handleDeleteStock(kode) {
   refreshAfterMutation(() => deleteStock(kode));
 }
-
 function handleCreateDeliveryOrder(payload) {
   refreshAfterMutation(() => createDeliveryOrder(payload));
 }
-
 function handleUpdateDeliveryOrder(nomorDO, payload) {
   refreshAfterMutation(() => updateDeliveryOrder(nomorDO, payload));
 }
-
 function handleDeleteDeliveryOrder(nomorDO) {
   refreshAfterMutation(() => deleteDeliveryOrder(nomorDO));
 }
@@ -119,12 +93,10 @@ function submitLogin() {
   const user = dataPengguna.find(
     (item) => item.email === form.email.trim() && item.password === form.password,
   );
-
   if (!user) {
     window.alert('email/password yang anda masukkan salah');
     return;
   }
-
   loggedInUser.value = user;
   localStorage.setItem('loggedInUser', JSON.stringify(user));
 }
@@ -140,21 +112,17 @@ function logout() {
 function setActiveTab(tab) {
   activeTab.value = tab;
 }
-
 function closeForgotModal() {
   showForgotModal.value = false;
 }
-
 function closeRegisterModal() {
   showRegisterModal.value = false;
 }
-
 function sendResetRequest() {
   window.alert('Permintaan reset password telah dikirim.');
   requestEmail.value = '';
   closeForgotModal();
 }
-
 function showRegistrationInfo() {
   window.alert('Silakan kunjungi admisi-sia.ut.ac.id');
   closeRegisterModal();
@@ -167,92 +135,34 @@ onMounted(() => {
 
 <template>
   <div>
-    <div v-if="!loggedInUser" class="login-container">
-      <div class="login-card">
-        <img
-          src="/assets/images/logo.png"
-          alt="UT Logo"
-          style="max-width: 150px; margin-bottom: 15px"
-        />
-        <h2>Sistem Bahan Ajar UT</h2>
-        <form id="loginForm" @submit.prevent="submitLogin">
-          <div class="form-group">
-            <label for="email">Email</label>
-            <input
-              id="email"
-              v-model="form.email"
-              type="email"
-              required
-              placeholder="Masukkan email anda"
-            />
-          </div>
-          <div class="form-group">
-            <label for="password">Password</label>
-            <input
-              id="password"
-              v-model="form.password"
-              type="password"
-              required
-              placeholder="Masukkan password anda"
-            />
-          </div>
-          <button type="submit" class="btn btn-primary" style="width: 100%">Login</button>
-        </form>
-
-        <p v-if="loggedInUser" class="mt-1" style="color: var(--ut-blue)">
-          {{ welcomeMessage }}
-        </p>
-
-        <div class="auth-links">
-          <a id="lupaPasswordBtn" @click="showForgotModal = true">Lupa password?</a> |
-          <a id="daftarBtn" @click="showRegisterModal = true">Daftar akun baru</a>
-        </div>
-      </div>
-    </div>
+    <LoginPage
+      v-if="!loggedInUser"
+      :form="form"
+      :show-forgot-modal="showForgotModal"
+      :show-register-modal="showRegisterModal"
+      :request-email="requestEmail"
+      @submit-login="submitLogin"
+      @open-forgot-modal="showForgotModal = true"
+      @open-register-modal="showRegisterModal = true"
+      @close-forgot-modal="closeForgotModal"
+      @close-register-modal="closeRegisterModal"
+      @update:request-email="requestEmail = $event"
+      @send-reset-request="sendResetRequest"
+      @show-registration-info="showRegistrationInfo"
+    />
 
     <div v-else>
-      <nav class="navbar">
-        <a href="#" class="brand" style="display: flex; align-items: center">
-          <img
-            src="/assets/images/logo.png"
-            alt="UT Logo"
-            style="height: 30px; margin-right: 10px"
-          />
-          Sistem Bahan Ajar UT
-        </a>
-        <ul class="nav-links">
-          <li><a href="#">Informasi Bahan Ajar</a></li>
-          <li><a href="#">Tracking Pengiriman</a></li>
-          <li class="dropdown">
-            <a href="#">Laporan &#9662;</a>
-            <div class="dropdown-content">
-              <a href="#">Monitoring progress DO</a>
-              <a href="#">Rekap bahan ajar</a>
-            </div>
-          </li>
-          <li><a href="#">Histori Transaksi</a></li>
-          <li><a href="#" @click.prevent="logout">Logout</a></li>
-        </ul>
-      </nav>
+      <AppNavbar @logout="logout" />
 
       <div class="container mt-3">
-        <div class="card text-center">
-          <h1>{{ greetingMessage }}</h1>
-          <p class="mt-1">Anda login sebagai {{ loggedInUser.nama }} ({{ loggedInUser.role }})</p>
-        </div>
+        <DashboardHome :greeting-message="greetingMessage" :logged-in-user="loggedInUser" />
 
         <div class="card mt-2">
           <h2>Dashboard</h2>
-          <p class="mt-1">
-            Pilih menu utama untuk mengelola data stok bahan ajar atau tracking DO.
-          </p>
+          <p class="mt-1">Pilih menu utama untuk mengelola data stok bahan ajar atau tracking DO.</p>
 
           <div class="nav-links" style="margin-top: 16px; gap: 10px">
-            <a
-              href="#"
-              :class="{ active: activeTab === 'stock' }"
-              @click.prevent="setActiveTab('stock')"
-            >
+            <a href="#" :class="{ active: activeTab === 'stock' }" @click.prevent="setActiveTab('stock')">
               Stok Bahan Ajar
             </a>
             <a
@@ -264,64 +174,18 @@ onMounted(() => {
             </a>
           </div>
 
-          <div v-if="isLoading" class="mt-2">
-            <p>Memuat data...</p>
-          </div>
-          <div v-else-if="errorMessage" class="mt-2">
-            <p>{{ errorMessage }}</p>
-          </div>
-
+          <div v-if="isLoading" class="mt-2"><p>Memuat data...</p></div>
+          <div v-else-if="errorMessage" class="mt-2"><p>{{ errorMessage }}</p></div>
           <div v-else class="mt-2">
-            <section v-if="activeTab === 'stock'">
-              <h3>Stok Bahan Ajar</h3>
-              <p class="mt-1">Halaman stok akan ditampilkan di sini.</p>
-              <p class="mt-1">
-                Data layanan: {{ stockData.length }} item stok, {{ packageData.length }} paket,
-                {{ masterData.upbjjList.length }} UPBJJ.
-              </p>
-            </section>
-
-            <section v-else>
-              <h3>Tracking DO</h3>
-              <p class="mt-1">Halaman tracking delivery order akan ditampilkan di sini.</p>
-              <p class="mt-1">Data layanan: {{ deliveryOrders.length }} delivery order.</p>
-            </section>
+            <StockPage
+              v-if="activeTab === 'stock'"
+              :stock-data="stockData"
+              :package-data="packageData"
+              :master-data="masterData"
+            />
+            <DoTracking v-else :delivery-orders="deliveryOrders" />
           </div>
         </div>
-      </div>
-    </div>
-
-    <div
-      v-show="showForgotModal"
-      id="modalLupaPassword"
-      class="modal-overlay"
-      @click.self="closeForgotModal"
-    >
-      <div class="modal-content">
-        <span id="closeLupaPassword" class="close-btn" @click="closeForgotModal">&times;</span>
-        <h3>Lupa Password?</h3>
-        <p class="mt-1">
-          Silakan hubungi administrator UT atau masukkan email Anda untuk reset
-          password.
-        </p>
-        <div class="form-group mt-2">
-          <input v-model="requestEmail" type="email" placeholder="Email Anda" />
-        </div>
-        <button class="btn" @click="sendResetRequest">Kirim Permintaan</button>
-      </div>
-    </div>
-
-    <div
-      v-show="showRegisterModal"
-      id="modalDaftar"
-      class="modal-overlay"
-      @click.self="closeRegisterModal"
-    >
-      <div class="modal-content">
-        <span id="closeDaftar" class="close-btn" @click="closeRegisterModal">&times;</span>
-        <h3>Daftar Akun</h3>
-        <p class="mt-1">Pendaftaran mahasiswa baru dilakukan melalui admisi UT.</p>
-        <button class="btn mt-2" @click="showRegistrationInfo">Info Pendaftaran</button>
       </div>
     </div>
   </div>
