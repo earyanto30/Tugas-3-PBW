@@ -182,6 +182,9 @@ onMounted(() => {
               :stock-data="stockData"
               :package-data="packageData"
               :master-data="masterData"
+              @create-stock="handleCreateStock"
+              @update-stock="handleUpdateStock"
+              @delete-stock="handleDeleteStock"
             />
             <DoTracking v-else :delivery-orders="deliveryOrders" />
           </div>
