@@ -11,6 +11,7 @@ import {
   createStock,
   deleteDeliveryOrder,
   deleteStock,
+  getNextDONumber,
   getRootData,
   updateDeliveryOrder,
   updateStock,
@@ -31,6 +32,7 @@ const isLoading = ref(false);
 const errorMessage = ref('');
 
 const currentHour = new Date().getHours();
+const nextDoNumber = computed(() => getNextDONumber());
 const greetingMessage = computed(() => {
   if (currentHour >= 0 && currentHour < 11) return 'Selamat Pagi!';
   if (currentHour >= 11 && currentHour < 15) return 'Selamat Siang!';
@@ -186,7 +188,14 @@ onMounted(() => {
               @update-stock="handleUpdateStock"
               @delete-stock="handleDeleteStock"
             />
-            <DoTracking v-else :delivery-orders="deliveryOrders" />
+            <DoTracking
+              v-else
+              :delivery-orders="deliveryOrders"
+              :package-data="packageData"
+              :delivery-options="masterData.pengirimanList"
+              :next-do-number="nextDoNumber"
+              @create-delivery-order="handleCreateDeliveryOrder"
+            />
           </div>
         </div>
       </div>
