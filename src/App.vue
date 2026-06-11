@@ -7,6 +7,7 @@ import StockPage from './components/stock/StockPage.vue';
 import DoTracking from './components/tracking/DoTracking.vue';
 import { dataPengguna } from '../data/data.js';
 import {
+  addDeliveryProgress,
   createDeliveryOrder,
   createStock,
   deleteDeliveryOrder,
@@ -89,6 +90,9 @@ function handleUpdateDeliveryOrder(nomorDO, payload) {
 }
 function handleDeleteDeliveryOrder(nomorDO) {
   refreshAfterMutation(() => deleteDeliveryOrder(nomorDO));
+}
+function handleAddDeliveryProgress(nomorDO, payload) {
+  refreshAfterMutation(() => addDeliveryProgress(nomorDO, payload));
 }
 
 function submitLogin() {
@@ -195,6 +199,7 @@ onMounted(() => {
               :delivery-options="masterData.pengirimanList"
               :next-do-number="nextDoNumber"
               @create-delivery-order="handleCreateDeliveryOrder"
+              @add-delivery-progress="handleAddDeliveryProgress"
             />
           </div>
         </div>

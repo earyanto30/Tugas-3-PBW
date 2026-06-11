@@ -20,6 +20,7 @@ const emit = defineEmits(['create-delivery-order']);
 
 const form = reactive(createInitialForm());
 const errors = reactive({
+  nomorDO: '',
   nim: '',
   nama: '',
   ekspedisi: '',
@@ -30,9 +31,9 @@ const errors = reactive({
 const selectedPackage = computed(
   () => props.packageData.find((item) => item.kode === form.paket) ?? null,
 );
-
 const formattedTanggalKirim = computed(() => formatTanggalIndonesia(form.tanggalKirim));
 const totalPriceLabel = computed(() => formatRupiah(form.total));
+const doPreviewLabel = computed(() => form.nomorDO || props.nextDoNumber);
 
 watch(
   () => props.nextDoNumber,
@@ -107,7 +108,13 @@ function validateRequired(field, label) {
 function validateForm() {
   clearErrors();
 
+  const doNumberValid = /^DO\d{4}-\d{3}$/.test(String(form.nomorDO ?? '').trim());
+  if (!doNumberValid) {
+    errors.nomorDO = 'Nomor DO otomatis tidak valid.';
+  }
+
   const checks = [
+    doNumberValid,
     validateRequired('nim', 'NIM'),
     validateRequired('nama', 'Nama mahasiswa'),
     validateRequired('ekspedisi', 'Ekspedisi'),
@@ -133,7 +140,7 @@ function submitForm() {
   if (!validateForm()) return;
 
   emit('create-delivery-order', {
-    nomorDO: form.nomorDO,
+    nomorDO: String(form.nomorDO).trim(),
     nim: String(form.nim).trim(),
     nama: String(form.nama).trim(),
     status: 'Menunggu Diproses',
@@ -155,6 +162,10 @@ function submitForm() {
       <div class="form-group">
         <label>Nomor DO (Otomatis)</label>
         <input :value="form.nomorDO" type="text" readonly />
+        <p class="mt-1">
+          Format DO: <strong v-text="doPreviewLabel"></strong>
+        </p>
+        <p v-if="errors.nomorDO" style="color: red" v-text="errors.nomorDO"></p>
       </div>
 
       <div class="form-group">
@@ -202,6 +213,7 @@ function submitForm() {
         <p><strong>Kode Paket:</strong> <span v-text="selectedPackage?.kode ?? '-'"></span></p>
         <p><strong>Nama Paket:</strong> <span v-text="selectedPackage?.nama ?? '-'"></span></p>
         <p><strong>Isi:</strong> <span v-text="selectedPackage ? selectedPackage.isi.join(', ') : '-'"></span></p>
+        <p><strong>Total Paket:</strong> <span v-text="totalPriceLabel"></span></p>
       </div>
 
       <div class="form-group">
@@ -214,6 +226,14 @@ function submitForm() {
       <div class="form-group">
         <label>Total Harga</label>
         <input :value="totalPriceLabel" type="text" readonly />
+      </div>
+
+      <div v-if="selectedPackage" class="form-group">
+        <label>Preview Delivery Order</label>
+        <p><strong>Nomor DO:</strong> <span v-text="doPreviewLabel"></span></p>
+        <p><strong>Tanggal Kirim:</strong> <span v-text="formattedTanggalKirim"></span></p>
+        <p><strong>Nama Paket:</strong> <span v-text="selectedPackage.nama"></span></p>
+        <p><strong>Total Bayar:</strong> <span v-text="totalPriceLabel"></span></p>
       </div>
 
       <p v-if="Object.values(errors).some(Boolean)" style="color: red">Periksa input form sebelum simpan.</p>

@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
 import DoForm from './DoForm.vue';
+import ProgressForm from './ProgressForm.vue';
 
 const props = defineProps({
   deliveryOrders: {
@@ -21,7 +22,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['create-delivery-order']);
+const emit = defineEmits(['create-delivery-order', 'add-delivery-progress']);
 
 const searchKeyword = ref('');
 const hasSearched = ref(false);
@@ -146,6 +147,10 @@ function formatTanggalIndonesia(value) {
 function handleCreateDeliveryOrder(payload) {
   emit('create-delivery-order', payload);
 }
+
+function handleAddProgress(nomorDO, payload) {
+  emit('add-delivery-progress', nomorDO, payload);
+}
 </script>
 
 <template>
@@ -158,7 +163,7 @@ function handleCreateDeliveryOrder(payload) {
         <input
           v-model.trim="searchKeyword"
           type="text"
-          placeholder="Contoh: DO2025-0001 / 123456789"
+          placeholder="Contoh: DO2025-001 / 123456789"
           @keyup.enter="runSearch"
           @keyup.esc="clearSearch"
         />
@@ -267,9 +272,6 @@ function handleCreateDeliveryOrder(payload) {
       @create-delivery-order="handleCreateDeliveryOrder"
     />
 
-    <div class="card mt-2">
-      <h3>Tambah Progress Pengiriman</h3>
-      <p class="mt-1">Area form progress disiapkan untuk Step 13. Detail tracking sudah tampil dari hasil pencarian.</p>
-    </div>
+    <ProgressForm :selected-tracking="selectedTracking" @add-progress="handleAddProgress" />
   </section>
 </template>
